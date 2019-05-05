@@ -30,7 +30,7 @@ def generate_model():
     model = Sequential()
 
     #input and flatten
-    model.add(Dense(20, kernel_initializer='normal', activation='relu', name="input", input_shape=(20,480,640)))
+    model.add(Dense(20, kernel_initializer='normal', activation='relu', name="input", input_shape=(480,640)))
     model.add(Flatten()) # Flatten reuslts to 1-d vec
 
     # hidden layers
@@ -46,21 +46,23 @@ def generate_model():
 
 
 def train_model(train_data, train_labels, model):
-    train_data_one = np.array([train_data[:20]])
+    #train_data_one = np.array([train_data[:20]])
     test = []
     train = []
-    i = 0
     # train on all but last 2 frames seconds
-    for _ in range():
-        train.append(np.array(train_data[i:i+20]))
-        i += 20
-        test.append(train_labels[_])
+    for i in range(10115):
+        train.append(np.array(train_data[i]))
+        test.append(train_labels[i])
     train = np.array(train)
     # test on next 30 seconds
     test = np.array(test)
-    ex = np.array([train_labels[0]])
+    #ex = np.array([train_labels[0]])
     model.fit(train, test, batch_size=1, epochs=8, class_weight=None)
-    print(model.predict(train_data_one))
+    predict_test = []
+    predict_test.append(np.array(train_data[10119]))
+    predict_test = np.array(predict_test)
+    print(model.predict(predict_test))
+    print("actual value is :", train_labels[10119])
 
 
 def main():
