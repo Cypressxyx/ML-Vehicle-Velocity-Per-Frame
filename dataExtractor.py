@@ -14,21 +14,29 @@ optical_flow_lk_params = dict(winSize=(10, 10),
                               maxLevel=2,
                               criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
 
-
+# dense flow produces better results
 def dense_optical_flow(frame_one, frame_two):
-    #better results
+
+    # crop y to 360 to remove unneeded info like car head
+    frame_one = frame_one[0:360, 0:640]
+    frame_two = frame_two[0:360, 0:640]
+
     hue_saturation_value = np.zeros_like(frame_one)
+    hue_saturation_value[..., 1] = 255
+
     frame_one = cv2.cvtColor(frame_one, cv2.COLOR_BGR2GRAY)
     frame_two = cv2.cvtColor(frame_two, cv2.COLOR_BGR2GRAY)
-    hue_saturation_value[..., 1] = 255
     flow = cv2.calcOpticalFlowFarneback(frame_one, frame_two, None, 0.5, 3, 15, 3, 5, 1.2, 0)
     mag, ang = cv2.cartToPolar(flow[..., 0], flow[..., 1])
+
     hue_saturation_value[..., 0] = ang * 180 / np.pi / 2
     hue_saturation_value[..., 2] = cv2.normalize(mag, None, 0, 255, cv2.NORM_MINMAX)
     bgr = cv2.cvtColor(hue_saturation_value, cv2.COLOR_HSV2BGR)
-    #cv2.imshow('frame2', bgr)
-    #cv2.waitKey(30) & 0xff
-    #time.sleep(.001)
+    cv2.imshow('computer_vision', bgr)
+    cv2.imshow('frame1', frame_one)
+    cv2.imshow('frame2', frame_two)
+    cv2.waitKey(30) & 0xff
+    time.sleep(.000000001)
     #angle is to miniscule, look into layer for better classifcation maybe but for now use magnitude
     return mag
 
@@ -80,13 +88,12 @@ def extract_frames(video_location, output_location):
 
 def load_frames(frame_dir):
     test_loading = 0
-    test_loading = -999998
     print("Loading frames from:", frame_dir)
     images = []
     filelist = os.listdir(frame_dir)
     filelist = sorted(filelist, key=lambda x: int((os.path.splitext(x))[0].split('_')[1]))
     for filename in filelist:
-        if test_loading > 900:
+        if test_loading > 1200:
             break
         test_loading += 1
         file_location = frame_dir + filename
