@@ -26,7 +26,7 @@ def dense_optical_flow(frame_one, frame_two):
 
     frame_one = cv2.cvtColor(frame_one, cv2.COLOR_BGR2GRAY)
     frame_two = cv2.cvtColor(frame_two, cv2.COLOR_BGR2GRAY)
-    flow = cv2.calcOpticalFlowFarneback(frame_one, frame_two, None, 0.5, 10, 30, 5, 7, 1.5, 0)
+    flow = cv2.calcOpticalFlowFarneback(frame_one, frame_two, None, 0.5, 10, 30, 3, 7, 1.5, 0)
     mag, ang = cv2.cartToPolar(flow[..., 0], flow[..., 1])
 
     hue_saturation_value[..., 0] = ang * 180 / np.pi / 2
