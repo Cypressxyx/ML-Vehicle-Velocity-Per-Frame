@@ -35,10 +35,12 @@ def generate_model():
     model = Sequential()
 
     #input and flatten
-    model.add(Conv1D(128, kernel_size=2, strides=2, activation='relu',
-                     name="input_conv_2d", input_shape=(360, 640)))
+    #model.add(Conv1D(128, kernel_size=2, strides=2, activation='relu',
+     #                name="input_conv_2d", input_shape=(210, 640)))
+    model.add(Dense(210, kernel_initializer='normal', activation='relu', name="input", input_shape=(210,640)))
+    #model.add(Dense(64, kernel_initializer='normal', activation='relu', name="s"))
     model.add(BatchNormalization())
-    model.add(MaxPooling1D(pool_size=2))
+    #model.add(MaxPooling1D(pool_size=2))
 
     model.add(Dropout(0.5))
 
@@ -46,13 +48,13 @@ def generate_model():
 
     # hidden layers
     model.add(Dense(32, kernel_initializer='normal', activation='relu', name="first_hidden"))
-   # model.add(Dense(10, kernel_initializer='normal', activation='relu', name="first_hidden"))
+    model.add(Dense(10, kernel_initializer='normal', activation='relu', name="second_hidden"))
 
     #output layer
     model.add(Dense(1,kernel_initializer='normal', activation='linear', name="output_layer", input_dim=1))
     optimizer = Adam(lr=0.0001)
-    # model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=['mean_squared_error'])
-    model.compile(loss='mean_absolute_error', optimizer=optimizer, metrics=['mean_absolute_error'])
+    model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=['mean_squared_error'])
+    # model.compile(loss='mean_absolute_error', optimizer=optimizer, metrics=['mean_absolute_error'])
     model.summary()
     return model
 
@@ -63,16 +65,21 @@ def analyze_predictions(predicted_values, actual_values):
     x = [i for i in range(num_values)]
     print(predicted_values)
     print("actual values are:", actual_values)
+
+
+    # calculate mean error
     diff = predicted_values - np.array(actual_values)
-    print("difference is", predicted_values - np.array(actual_values))
+    mean_square = sum(diff * diff) / len(actual_values)
+    print("Mean square is:", mean_square)
+    mean_square_text = "Mean square is: " + str(mean_square)
+
+    plt.text(1,0, mean_square_text , family="sans-serif")
     plt.scatter(x, predicted_values)
     plt.scatter(x, actual_values, color='red')
     plt.plot(predicted_values, color='yellow')
     plt.plot(actual_values, color='orange')
-    plt.legend()
     plt.ylabel("Velocity")
     plt.xlabel("Frame")
-    plt.savefig('foo.png')
     plt.show()
 
 
