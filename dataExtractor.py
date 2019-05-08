@@ -1,7 +1,6 @@
 import os
 import cv2
 import numpy as np
-from keras.utils import to_categorical
 
 feature_params = dict(maxCorners=500,
                       qualityLevel=0.3,
@@ -85,15 +84,21 @@ def extract_frames(video_location, output_location):
 
 # Load frames in black and white image numpy array
 
+first_load = False
 
 def load_frames(frame_dir):
+    if "train" in frame_dir:
+        max = 20396
+    else:
+        max = 10795
+
     test_loading = 0
     print("Loading frames from:", frame_dir)
     images = []
     file_list = os.listdir(frame_dir)
     file_list = sorted(file_list, key=lambda x: int((os.path.splitext(x))[0].split('_')[1]))
     for filename in file_list:
-        if test_loading > 5000:
+        if test_loading > max:
             break
         test_loading += 1
         file_location = frame_dir + filename
@@ -107,4 +112,4 @@ def load_labels(labels_location):
     print("Loading labels from:", labels_location)
     labels = open(labels_location, "r")
     train_labels = [float(label) for label in labels]
-    return np.array(train_labels)
+    return train_labels
