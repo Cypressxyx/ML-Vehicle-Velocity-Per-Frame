@@ -1,9 +1,7 @@
 import os
 import cv2
-import time
 import numpy as np
 from keras.utils import to_categorical
-from scipy import signal
 
 feature_params = dict(maxCorners=500,
                       qualityLevel=0.3,
@@ -28,9 +26,10 @@ def dense_optical_flow(frame_one, frame_two):
     frame_one = cv2.cvtColor(frame_one, cv2.COLOR_BGR2GRAY)
     frame_two = cv2.cvtColor(frame_two, cv2.COLOR_BGR2GRAY)
 
-    #equalize histogram of images, produces bad results
+    # equalize histogram of images, generates too much noise and produces bad results
     # frame_one = cv2.equalizeHist(frame_one)
     # frame_two = cv2.equalizeHist(frame_two)
+
     flow = cv2.calcOpticalFlowFarneback(frame_one, frame_two, None, 0.5, 5, 15, 3, 7, 1.5, 0)
     mag, ang = cv2.cartToPolar(flow[..., 0], flow[..., 1])
 
@@ -41,7 +40,7 @@ def dense_optical_flow(frame_one, frame_two):
     cv2.imshow('frame1', frame_one)
     cv2.imshow('frame2', frame_two)
     cv2.waitKey(30) & 0xff
-    # angle is to miniscule, look into layer for better classifcation maybe but for now use magnitude
+    # angle is to miniscule, look into layer for better classification maybe but for now use magnitude
     return mag
 
 
@@ -55,18 +54,15 @@ def lucas_kanae_optical_flow(frame_one, frame_two):
     good_points = points_one[st == 1]
     good_original_points = corner_points[st == 1]
 
-    # viualization
+    # visual
     for i, (new, old) in enumerate(zip(good_points, good_original_points)):
         a, b = new.ravel()
         c, d = old.ravel()
         mask = cv2.line(mask, (a, b), (c, d), color[i].tolist(), 2)
         frame_two_copy = cv2.circle(frame_two_copy, (a, b), 5, color[i].tolist(), -1)
     img = cv2.add(frame_two_copy, mask)
-
-    # cv2.imshow('frame', img)
-    # cv2.waitKey(30) & 0xff
-    # time.sleep(.0001)
-
+    cv2.imshow('frame', img)
+    cv2.waitKey(30) & 0xff
     return points_one
 
 
@@ -94,25 +90,21 @@ def load_frames(frame_dir):
     test_loading = 0
     print("Loading frames from:", frame_dir)
     images = []
-    filelist = os.listdir(frame_dir)
-    filelist = sorted(filelist, key=lambda x: int((os.path.splitext(x))[0].split('_')[1]))
-    for filename in filelist:
+    file_list = os.listdir(frame_dir)
+    file_list = sorted(file_list, key=lambda x: int((os.path.splitext(x))[0].split('_')[1]))
+    for filename in file_list:
         if test_loading > 5000:
             break
         test_loading += 1
         file_location = frame_dir + filename
         images.append(cv2.imread(file_location, 1))
     return images
-    #return np.array(images)
 
 
 def load_labels(labels_location):
+    if labels_location is None:
+        return []
     print("Loading labels from:", labels_location)
     labels = open(labels_location, "r")
-    train_labels = [float(label) for label in labels ]
+    train_labels = [float(label) for label in labels]
     return np.array(train_labels)
-
-
-def one_hot_encode(labels):
-    return to_categorical(labels, num_classes=len(labels))
-
