@@ -15,18 +15,23 @@ optical_flow_lk_params = dict(winSize=(10, 10),
                               criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
 
 # dense flow produces better results
+
+
 def dense_optical_flow(frame_one, frame_two):
 
-    # crop y to 360 to remove unneeded info like car head
-    frame_one = frame_one[150:360, 0:640]
-    frame_two = frame_two[150:360, 0:640]
+    # crop to only include roads
+    frame_one = frame_one[240:360, 0:640]
+    frame_two = frame_two[240:360, 0:640]
 
     hue_saturation_value = np.zeros_like(frame_one)
     hue_saturation_value[..., 1] = 255
-
     frame_one = cv2.cvtColor(frame_one, cv2.COLOR_BGR2GRAY)
     frame_two = cv2.cvtColor(frame_two, cv2.COLOR_BGR2GRAY)
-    flow = cv2.calcOpticalFlowFarneback(frame_one, frame_two, None, 0.5, 10, 30, 3, 7, 1.5, 0)
+
+    #equalize histogram of images, produces bad results
+    # frame_one = cv2.equalizeHist(frame_one)
+    # frame_two = cv2.equalizeHist(frame_two)
+    flow = cv2.calcOpticalFlowFarneback(frame_one, frame_two, None, 0.5, 5, 15, 3, 7, 1.5, 0)
     mag, ang = cv2.cartToPolar(flow[..., 0], flow[..., 1])
 
     hue_saturation_value[..., 0] = ang * 180 / np.pi / 2
@@ -36,8 +41,7 @@ def dense_optical_flow(frame_one, frame_two):
     cv2.imshow('frame1', frame_one)
     cv2.imshow('frame2', frame_two)
     cv2.waitKey(30) & 0xff
-    #time.sleep(.000000001)
-    #angle is to miniscule, look into layer for better classifcation maybe but for now use magnitude
+    # angle is to miniscule, look into layer for better classifcation maybe but for now use magnitude
     return mag
 
 

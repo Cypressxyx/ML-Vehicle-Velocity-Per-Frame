@@ -37,7 +37,7 @@ def generate_model():
     #input and flatten
     #model.add(Conv1D(128, kernel_size=2, strides=2, activation='relu',
      #                name="input_conv_2d", input_shape=(210, 640)))
-    model.add(Dense(210, kernel_initializer='normal', activation='relu', name="input", input_shape=(210,640)))
+    model.add(Dense(210, kernel_initializer='normal', activation='relu', name="input", input_shape=(120, 640)))
     #model.add(Dense(64, kernel_initializer='normal', activation='relu', name="s"))
     model.add(BatchNormalization())
     #model.add(MaxPooling1D(pool_size=2))
@@ -47,14 +47,14 @@ def generate_model():
     model.add(Flatten()) # Flatten reuslts to 1-d vec
 
     # hidden layers
-    model.add(Dense(32, kernel_initializer='normal', activation='relu', name="first_hidden"))
+    model.add(Dense(64, kernel_initializer='normal', activation='relu', name="first_hidden"))
     model.add(Dense(10, kernel_initializer='normal', activation='relu', name="second_hidden"))
 
     #output layer
     model.add(Dense(1,kernel_initializer='normal', activation='linear', name="output_layer", input_dim=1))
     optimizer = Adam(lr=0.0001)
-    model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=['mean_squared_error'])
-    # model.compile(loss='mean_absolute_error', optimizer=optimizer, metrics=['mean_absolute_error'])
+    #model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=['mean_squared_error'])
+    model.compile(loss='mean_absolute_error', optimizer=optimizer, metrics=['mean_absolute_error'])
     model.summary()
     return model
 
@@ -85,33 +85,39 @@ def analyze_predictions(predicted_values, actual_values):
 
 def train_model(train_data, train_labels, model):
     print("Training model")
-    test  = []
-    train = []
-    train_labels = train_labels[:len(train_data)]
-    # num_test = len(train_data)
-    # train on all but last 10 frames
-    # for i in range(num_test):
-        # train.append(np.array(train_data[i]))
-        # test.append(train_labels[i])
-    train = np.array(train)
-    labels_cpy = test.copy()
-    test = np.array(test)
-    model.fit(train_data, train_labels, batch_size=1, epochs=8, class_weight=None)
+    train_labels = train_labels[1:len(train_data) + 1]
 
-    # test on all frames
-    predict_test  = []
-    actual_values = []
-    """ 
-    startIdx = 0
-    endIdx = len(train_data)
-    for i in range(190, 199):
-        predict_test.append(np.array(train_data[i]))
-        actual_values.append(train_labels[i])
-        
+    indices = np.arange(train_data.shape[0])
+    np.random.shuffle(indices)
+    train_data = train_data[indices]
+    train_labels = train_labels[indices]
+    model.fit(train_data, train_labels, batch_size=8, epochs=8, class_weight=None)
 
-    predict_test = np.array(predict_test)
-    """
-    predicted_values = model.predict(train_data)
+    # predicted_values = model.predict(train_data)
+    # analyze_predictions(predicted_values, train_labels)
+    return model
+
+
+def predict_values(train_data, train_labels, model):
+    print("Predicting Values")
+    train_labels = train_labels[1:len(train_data) + 1]
+    predicted_values = []
+    value = np.array([train_data[0]])
+    predicted_values.append(model.predict(value))
+
+    for i in range(1,len(train_data)):
+        value = np.array([train_data[i]])
+        prediction = model.predict(value)
+        predicted_value = prediction[0][0]
+        previous_value  = predicted_values[i-1][0][0]
+        # Check if prediction make sense, if it doesnt scale it down or up
+        if predicted_value > previous_value + 20 or predicted_value < previous_value - 20:
+            # normalize value since we cant go from i-1 to 20 less/more in one frame
+            print("correcting")
+            normalized_constant = predicted_value / (previous_value + predicted_value)
+            prediction[0][0] = 20 + normalized_constant if predicted_value > previous_value else 20 - normalized_constant
+        predicted_values.append(prediction)
+    predicted_values = np.array(predicted_values)
     analyze_predictions(predicted_values, train_labels)
 
 
@@ -122,7 +128,8 @@ def main():
     train_data, train_labels = load_training_data()
     train_data = generate_optical_flow_data(train_data)
     model = generate_model()
-    train_model(train_data, train_labels, model)
+    model = train_model(train_data, train_labels, model)
+    predict_values(train_data, train_labels, model)
 
 
 main()
