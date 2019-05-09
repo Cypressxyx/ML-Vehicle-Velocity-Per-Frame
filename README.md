@@ -41,8 +41,23 @@ Using pyplot, the distribution of the data was plotted after the oversampling to
 ![oversampled_data](data/oversampled_data.png )
 
 # Result analysis
+The classifier was ran on 8 epochs, 8 batch size, and learning rate of 0.001
+
+The original data before the oversampled was trained and then tested on the whole dataset at the end. The mean square on average was 2.66
+![origina](data/original%20mean%20square.png)
 
 
+The oversampled dataset slightly lowered the mean-square average to 2.3 on average.
+![origina](data/oversampled%20mean%20square.png).
+
+
+# Final touch logic
+
+The model predictions also were given logic.
+A lamborghini can go from 0-60 in ~ 3 seconds. That means we can ~change speeds in ~20 seconds. 
+in 20 frames, we can really only change speeds by ~1m/s. 
+
+Hence a cutoff was made, where if a prediction for frame was greater velocity than the previous frame by more than 15m/s(And this is being really generous), then the value would be brought down to a more realistic scale by using the previous frame velocity value.
 
 
 
