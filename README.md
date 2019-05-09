@@ -5,7 +5,7 @@ A regression learning model is made to help train the network on a video with 20
 
 # Data Extraction
 The data was generated using Gunner Farneback's dense optical-flow algorithim. The previous frame and the current frame was used the generate the data. The dense optical-flow implementation came from OpenCV calcOpticalFlowFarneback function.
-Using a sparse optical flow implementation was considered and calcOpticalFlowFarneback was used. Unfortunately, sparse optical flow did not produce good classification results.
+Using a sparse optical flow implementation was considered and calcOpticalFlowPyrLK was used. Unfortunately, sparse optical flow did not produce good classification results.
 
 
 Image intensity matching was considered and used. However when having the same matching intensity, the classifier tended to peform worse due to having to much background noise.
