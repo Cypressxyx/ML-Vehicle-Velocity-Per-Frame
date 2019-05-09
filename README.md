@@ -10,7 +10,7 @@ Using a sparse optical flow implementation was considered and calcOpticalFlowPyr
 
 Image intensity matching was considered and used. However when having the same matching intensity, the classifier tended to peform worse due to having to much background noise.
 
-Lastly, the video frames were cropped. This decision was made based on the idea that mutch of the data generated without cropping produced noise & classifying signs and mountains, which did not help in modeling the frame velocity.
+Lastly, the video frames were cropped. This decision was made based on the idea that mutch of the data generated without cropping produced noise & tended to classify the signs and mountains, which did not help in modeling the frame velocity.
 
 Once the cropping the done, the regression model improved dramatically from a mean squared error values of 25 to ~10.
 ![data_distribution](data/cropped.png)
